@@ -1,7 +1,6 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: secure-browser-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -21,7 +20,6 @@ services:
     build:
       context: .
       dockerfile: apps/backend/Dockerfile
-    container_name: secure-browser-backend
     restart: unless-stopped
     ports:
       - "${PORT:-3001}:3001"
@@ -43,7 +41,6 @@ services:
     build:
       context: .
       dockerfile: apps/frontend/Dockerfile
-    container_name: secure-browser-frontend
     restart: unless-stopped
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
@@ -55,13 +52,17 @@ services:
     networks:
       - secure-browser-net
 
+  # Built by default (no profile) so deploy targets that only run
+  # `compose up --build` (e.g. Dokploy) also produce the session image.
+  # It idles instead of running a browser stack; real sessions are
+  # spawned by the backend via the Docker socket.
   browser-image:
     build:
       context: docker/browser
       dockerfile: Dockerfile
     image: vnc-browser-chrome:latest
-    profiles:
-      - build-only
+    command: ["sleep", "infinity"]
+    restart: "no"
 
 volumes:
   postgres_data:
