@@ -15,12 +15,12 @@ echo "Viewport: ${VIEWPORT_WIDTH}x${VIEWPORT_HEIGHT}"
 
 # Set up display with appropriate resolution
 if [ "$IS_MOBILE" = "true" ]; then
-    # Mobile resolution
-    DISPLAY_RESOLUTION="375x667x24"
+    # Mobile resolution (16-bit halves the pixels x11vnc scans/encodes per frame)
+    DISPLAY_RESOLUTION="375x667x16"
     SCALE_RESOLUTION="375x667"
 else
-    # Desktop resolution
-    DISPLAY_RESOLUTION="1280x720x24"
+    # Desktop resolution (16-bit halves the pixels x11vnc scans/encodes per frame)
+    DISPLAY_RESOLUTION="1280x720x16"
     SCALE_RESOLUTION="1280x720"
 fi
 
@@ -40,8 +40,10 @@ sleep 2
 # Hide mouse cursor when inactive
 unclutter -idle 3 -root &
 
-# Start VNC server with appropriate scaling
-x11vnc -display :1 -nopw -forever -shared -ncache_cr -scale $SCALE_RESOLUTION &
+# Start VNC server with appropriate scaling.
+# -wait/-deferupdate batch rapid framebuffer changes (e.g. scrolling) into
+# fewer, bigger updates instead of many small ones — lower input latency over WAN.
+x11vnc -display :1 -nopw -forever -shared -ncache_cr -wait 20 -deferupdate 20 -scale $SCALE_RESOLUTION &
 
 # Wait for VNC to start
 sleep 2

@@ -73,8 +73,8 @@ export class DockerManager {
         Image: process.env.BROWSER_IMAGE || "vnc-browser-chrome:latest",
         name: `vnc-browser-${containerId}`,
         HostConfig: {
-          Memory: 512 * 1024 * 1024, // 512MB
-          CpuShares: 512, // Half CPU
+          Memory: 1024 * 1024 * 1024, // 1GB (modern Chrome thrashes under less)
+          CpuShares: 1024, // Full fair-share CPU (software rasterization is CPU-bound)
           NetworkMode: this.networkName,
           PortBindings: portBindings,
           AutoRemove: true, // automatically remove container when stopped
